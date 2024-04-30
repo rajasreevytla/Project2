@@ -5,64 +5,85 @@ from Book import Book
 from Show import Show
 import csv
 
+
 class Recommender:
     def __init__(self):
         self.books = {}
         self.shows = {}
         self.associations = {}
-
+    
     def loadBooks(self):
         while True:
-            file_path = filedialog.askopenfilename(title="Select a book file", filetypes=[("Tab-delimited files", "*.txt")])
+            file_path = filedialog.askopenfilename(title="Select a book file",
+                                                filetypes=[("Tab-delimited files", "*.csv")])
             if not file_path:
-                continue 
+                return  # User cancelled the dialog
             try:
                 with open(file_path, "r", newline='', encoding='utf-8') as file:
-                    reader = csv.DictReader(file, delimiter='\t')
+                    reader = csv.DictReader(file)
+                    self.books = {}  # Assuming self.books is a dictionary
                     for row in reader:
                         try:
-                            book = Book(row['ID'], row['Title'], row['AverageRating'], row['Authors'], row['ISBN'], row['ISBN13'],
-                                       row['LanguageCode'], int(row['Pages']), int(row['NumRatings']), row['PubDate'], row['Publisher'])
-                            self.books[row['ID']] = book
+                            book = Book(
+                                row['bookID'], 
+                                row['title'], 
+                                row['authors'], 
+                                row['average_rating'], 
+                                row['isbn'],
+                                row['isbn13'],
+                                row['language_code'], 
+                                int(row['num_pages']), 
+                                int(row['ratings_count']), 
+                                row['publication_date'],
+                                row['publisher']
+                            )
+                            self.books[row['bookID']] = book  # Assuming 'bookID' is the key to store in the dictionary
                         except ValueError as e:
-                            print(f"Error converting book data: {e}")  
+                            print(f"Error converting book data: {e}")
                         except KeyError as e:
-                            print(f"Missing expected column in data: {e}") 
+                            print(f"Missing expected column in data: {e}")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to read file: {e}")
-                continue  
-            break  
+                continue  # Allow the user to try again or cancel
+            break  # Successfully loaded the data
 
 
     def loadShows(self):
         while True:
-            file_path = filedialog.askopenfilename(title="Select a show file", filetypes=[("Tab-delimited files", "*.txt")])
+
+            file_path = filedialog.askopenfilename(title="Select a show file",
+                                                   filetypes=[("Tab-delimited files", "*.csv")])
             if not file_path:
-                continue
+                return
             try:
                 with open(file_path, "r", newline='', encoding='utf-8') as file:
-                    reader = csv.DictReader(file, delimiter='\t')
+                    reader = csv.DictReader(file)
+                    print("CSV Headers:", reader.fieldnames)
                     for row in reader:
                         try:
-                            show = Show(row['ID'], row['Title'], row['AverageRating'], row['Type'], row['Directors'], row['Actors'],
-                                        row['CountryCode'], row['DateAdded'], row['ReleaseYear'], row['Rating'], row['Duration'],
-                                        row['Genres'], row['Description'])
-                            self.shows[row['ID']] = show
+                            show = Show(row['show_id'], row['type'], row['title'], row['director'], row['cast'],
+                                        row['average_rating'],
+                                        row['country'], row['date_added'], row['release_year'], row['rating'],
+                                        row['duration'],
+                                        row['listed_in'], row['description'])
+                            self.shows[row['show_id']] = show
                         except ValueError as e:
-                            print(f"Error converting book data: {e}") 
+                            print(f"Error converting book data: {e}")
                         except KeyError as e:
-                            print(f"Missing expected column in data: {e}")  
+                            print(f"Missing expected column in data: {e}")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to read file: {e}")
-                continue 
+                continue
             break
+
     def loadAssociations(self):
         while True:
-            file_path = filedialog.askopenfilename(title="Select an association file", filetypes=[("Tab-delimited files", "*.txt")])
+            file_path = filedialog.askopenfilename(title="Select an association file",
+                                                   filetypes=[("Tab-delimited files", "*.csv")])
             if not file_path:
-                continue
+                return
             with open(file_path, "r", newline='', encoding='utf-8') as file:
-                reader = csv.reader(file, delimiter='\t')
+                reader = csv.reader(file)
                 for row in reader:
                     id1, id2 = row
                     if id1 not in self.associations:
@@ -70,15 +91,16 @@ class Recommender:
                     if id2 not in self.associations[id1]:
                         self.associations[id1][id2] = 0
                     self.associations[id1][id2] += 1
-                    
+
                     if id2 not in self.associations:
                         self.associations[id2] = {}
                     if id1 not in self.associations[id2]:
                         self.associations[id2][id1] = 0
                     self.associations[id2][id1] += 1
             break
+
     def getMovieList(self):
-        if not any(show for show in self.shows.values() if show._show_type == 'Movie'):return "No movies found."
+        if not any(show for show in self.shows.values() if show._show_type == 'Movie'): return "No movies found."
         max_title_length = max(len(show._title) for show in self.shows.values() if show._show_type == 'Movie')
         max_runtime_length = max(len(show._duration) for show in self.shows.values() if show._show_type == 'Movie')
         header = f"{'Title'.ljust(max_title_length + 2)}{'Runtime'.ljust(max_runtime_length + 2)}"
@@ -89,6 +111,7 @@ class Recommender:
                 runtime = show._duration.ljust(max_runtime_length + 2)
                 movie_list.append(f"{title}{runtime}")
         return '\n'.join(movie_list)
+
     def getBookList(self):
         if not self.books:
             return "No books found."
@@ -101,11 +124,13 @@ class Recommender:
             authors = book._authors.ljust(max_authors_length + 2)
             book_list.append(f"{title}{authors}")
         return '\n'.join(book_list)
+
     def getTVList(self):
         if not any(show for show in self.shows.values() if show._show_type == 'TV Show'):
             return "No TV shows found."
         max_title_length = max(len(show._title) for show in self.shows.values() if show._show_type == 'TV Show')
-        max_seasons_length = max(len(show._duration) for show in self.shows.values() if show._show_type == 'TV Show')  # Assuming duration field holds seasons
+        max_seasons_length = max(len(show._duration) for show in self.shows.values() if
+                                 show._show_type == 'TV Show')  # Assuming duration field holds seasons
         header = f"{'Title'.ljust(max_title_length + 2)}{'Seasons'.ljust(max_seasons_length + 2)}"
         tv_list = [header]
         for show in self.shows.values():
@@ -114,6 +139,7 @@ class Recommender:
                 seasons = show._duration.ljust(max_seasons_length + 2)
                 tv_list.append(f"{title}{seasons}")
         return '\n'.join(tv_list)
+
     def getMovieStats(self):
         from collections import Counter
         movies = [show for show in self.shows.values() if show._show_type == 'Movie']
@@ -122,12 +148,20 @@ class Recommender:
         total_movies = len(movies)
         rating_counts = Counter(movie._rating for movie in movies)
         rating_percentages = {rating: f"{(count / total_movies) * 100:.2f}%" for rating, count in rating_counts.items()}
-        total_duration = sum(int(movie._duration) for movie in movies)
+        # total_duration = sum(int(movie._duration) for movie in movies)
+        total_duration = sum(int(movie._duration.replace('min', '').strip()) for movie in movies)
         average_duration = f"{total_duration / total_movies:.2f}"
         directors = Counter(movie._directors for movie in movies)
         most_common_director, most_director_count = directors.most_common(1)[0]
-        actors = Counter(actor for movie in movies for actor in movie._actors.split(', '))
-        most_common_actor, most_actor_count = actors.most_common(1)[0]
+        actor_list = []
+        for movie in movies:
+            if movie._actors:
+                actors = movie._actors.replace("\\", ",").split(',')
+                actor_list.extend(actor.strip() for actor in actors)
+        actors = Counter(actor_list)
+        most_common_actor, most_actor_count = actors.most_common(1)[0] if actors else ("None", 0)
+        # actors = Counter(actor for movie in movies for actor in movie._actors.split(', '))
+        # most_common_actor, most_actor_count = actors.most_common(1)[0]
         genres = Counter(genre for movie in movies for genre in movie._genres.split(', '))
         most_common_genre, most_genre_count = genres.most_common(1)[0]
         stats = (
@@ -138,18 +172,27 @@ class Recommender:
             f"Most Frequent Genre: {most_common_genre} ({most_genre_count} occurrences)"
         )
         return stats
+
     def getTVStats(self):
-        from collections import Counter 
+        from collections import Counter
         tv_shows = [show for show in self.shows.values() if show._show_type == 'TV Show']
         if not tv_shows:
             return "No TV shows found."
         total_tv_shows = len(tv_shows)
         rating_counts = Counter(tv._rating for tv in tv_shows)
-        rating_percentages = {rating: f"{(count / total_tv_shows) * 100:.2f}%" for rating, count in rating_counts.items()}
+        rating_percentages = {rating: f"{(count / total_tv_shows) * 100:.2f}%" for rating, count in
+                              rating_counts.items()}
         total_seasons = sum(int(tv._duration.split(' ')[0]) for tv in tv_shows)
         average_seasons = f"{total_seasons / total_tv_shows:.2f}"
-        actors = Counter(actor for tv in tv_shows for actor in tv._actors.split(', '))
-        most_common_actor, most_actor_count = actors.most_common(1)[0]
+        actor_list = []
+        for tv_show in self.shows.values():
+            if tv_show._actors:
+                actors = tv_show._actors.replace("\\", ",").split(',')
+                actor_list.extend(actor.strip() for actor in actors)
+        actors = Counter(actor_list)
+        most_common_actor, most_actor_count = actors.most_common(1)[0] if actors else ("None", 0)
+        # actors = Counter(actor for tv in tv_shows for actor in tv._actors.split(', '))
+        # most_common_actor, most_actor_count = actors.most_common(1)[0]
         genres = Counter(genre for tv in tv_shows for genre in tv._genres.split(', '))
         most_common_genre, most_genre_count = genres.most_common(1)[0]
         stats = (
@@ -157,33 +200,53 @@ class Recommender:
             f"Average Number of Seasons: {average_seasons}\n"
             f"Most Common Actor: {most_common_actor} ({most_actor_count} shows)\n"
             f"Most Frequent Genre: {most_common_genre} ({most_genre_count} occurrences)"
-    )
+        )
 
         return stats
+
     def getBookStats(self):
         from collections import Counter
         if not self.books:
             return "No books found."
 
-        total_pages = sum(int(book._pages) for book in self.books.values())
+        total_pages = sum(int(book._num_pages) for book in self.books.values())
         total_books = len(self.books)
         average_pages = f"{total_pages / total_books:.2f}"
-        authors = Counter(author for book in self.books.values() for author in book._authors.split(', '))
-        most_common_author, most_author_books = authors.most_common(1)[0]
+        # authors = Counter(author for book in self.books.values() for author in book._authors.split(', '))
+
+        # most_common_author, most_author_books = authors.most_common(1)[0]
+        # publishers = Counter(book._publisher for book in self.books.values())
+        # most_common_publisher, most_publisher_books = publishers.most_common(1)[0]
+        # stats = (
+        #     f"Average Page Count: {average_pages}\n"
+        #     f"Most Prolific Author: {most_common_author} ({most_author_books} books)\n"
+        #     f"Most Prolific Publisher: {most_common_publisher} ({most_publisher_books} books)"
+        # )
+        # return stats
+        author_list = []
+        for book in self.books.values():
+            authors = book._authors.replace("\\", ",").split(',')
+            author_list.extend(author.strip() for author in authors)
+        authors = Counter(author_list)
+        most_common_author, most_author_books = authors.most_common(1)[0] if authors else ("None", 0)
+
         publishers = Counter(book._publisher for book in self.books.values())
-        most_common_publisher, most_publisher_books = publishers.most_common(1)[0]
+        most_common_publisher, most_publisher_books = publishers.most_common(1)[0] if publishers else ("None", 0)
+
         stats = (
             f"Average Page Count: {average_pages}\n"
-            f"Most Common Author: {most_common_author} ({most_author_books} books)\n"
-            f"Most Common Publisher: {most_common_publisher} ({most_publisher_books} books)"
-    )
+            f"Most Prolific Author: {most_common_author} ({most_author_books} books)\n"
+            f"Most Prolific Publisher: {most_common_publisher} ({most_publisher_books} books)"
+        )
         return stats
+
     def searchTVMovies(self, type, title, director, actor, genre):
         if type not in ['Movie', 'TV Show']:
             messagebox.showerror("Error", "Please select 'Movie' or 'TV Show' from Type first.")
             return "No Results"
         if not any([title, director, actor, genre]):
-            messagebox.showerror("Error", "Please enter information for the Title, Director, Actor, and/or Genre first.")
+            messagebox.showerror("Error",
+                                 "Please enter information for the Title, Director, Actor, and/or Genre first.")
             return "No Results"
         filtered_shows = [
             show for show in self.shows.values() if
@@ -201,7 +264,7 @@ class Recommender:
         max_actor_length = max(len(show._actors) for show in filtered_shows)
         max_genre_length = max(len(show._genres) for show in filtered_shows)
         header = f"{'Title'.ljust(max_title_length + 2)}{'Director'.ljust(max_director_length + 2)}" \
-             f"{'Actors'.ljust(max_actor_length + 2)}{'Genre'.ljust(max_genre_length + 2)}"
+                 f"{'Actors'.ljust(max_actor_length + 2)}{'Genre'.ljust(max_genre_length + 2)}"
         result_lines = [header]
         for show in filtered_shows:
             title = show._title.ljust(max_title_length + 2)
@@ -210,6 +273,7 @@ class Recommender:
             genre = show._genres.ljust(max_genre_length + 2)
             result_lines.append(f"{title}{director}{actors}{genre}")
         return '\n'.join(result_lines)
+
     def searchBooks(self, title, author, publisher):
         if not title and not author and not publisher:
             messagebox.showerror("Error", "Please enter information for the Title, Author, and/or Publisher first.")
@@ -233,6 +297,7 @@ class Recommender:
             publisher_formatted = book._publisher.ljust(max_publisher_length + 2)
             result_lines.append(f"{title_formatted}{authors_formatted}{publisher_formatted}")
         return '\n'.join(result_lines)
+
     def getRecommendations(self, media_type, title):
         if media_type in ['Movie', 'TV Show']:
             found_id = None
@@ -279,3 +344,9 @@ class Recommender:
         else:
             messagebox.showwarning("Warning", "Invalid media type specified. Choose 'Movie', 'TV Show', or 'Book'.")
             return "Invalid media type"
+
+
+
+
+
+

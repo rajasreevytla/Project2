@@ -1,7 +1,7 @@
 from Media import Media
 
 class Book(Media):
-    def __init__(self, media_id, title, average_rating, authors, isbn, isbn13, language_code, num_pages, ratings_count, pub_date, publisher):
+    def __init__(self, media_id, title, authors, average_rating, isbn, isbn13, language_code, num_pages, ratings_count, pub_date, publisher):
         super().__init__(media_id, title, average_rating)
         #call the function and initialize
         self._isbn = isbn

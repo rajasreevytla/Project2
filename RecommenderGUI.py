@@ -8,7 +8,7 @@ class RecommenderGUI:
 
         self.root = tk.Tk()
         self.root.title("Media Recommender")
-        self.root.geometry("1200x800")  
+        self.root.geometry("1200x720")
 
         self.notebook = ttk.Notebook(self.root)  # 创建一个标签页容器
         self.notebook.pack(expand=True, fill="both")  # 将标签页容器添加到主窗口
@@ -30,6 +30,7 @@ class RecommenderGUI:
 
         self.movie_stats_text = tk.Text(movie_tab)  # 创建一个文本框显示电影统计信息
         self.movie_stats_text.pack(expand=True, fill="both")  # 添加文本框到电影标签页
+
 
     def create_tv_show_tab(self):
         tv_show_tab = ttk.Frame(self.notebook)  # 创建一个框架用于电视节目标签页
@@ -54,37 +55,43 @@ class RecommenderGUI:
     def create_search_tab(self):
         search_tab = ttk.Frame(self.notebook)  # 创建一个框架用于搜索标签页
         self.notebook.add(search_tab, text="Search")  # 添加搜索标签页到标签页容器
+        
+        search_tab.grid_columnconfigure(0, weight=1)  # Labels column
+        search_tab.grid_columnconfigure(1, weight=3)  # Entries column, minimal weight
 
         self.search_type_label = tk.Label(search_tab, text="Type:")  # 创建标签“类型”
-        self.search_type_label.grid(row=0, column=0)  # 添加标签到搜索标签页
+        self.search_type_label.grid(row=0, column=0, sticky="w")  # 添加标签到搜索标签页
         self.search_type_combobox = ttk.Combobox(search_tab, values=["Movie", "TV Show"])  # 创建下拉菜单选择电影或电视节目
-        self.search_type_combobox.grid(row=0, column=1)  # 添加下拉菜单到搜索标签页
+        self.search_type_combobox.grid(row=0, column=1, sticky="w")  # 添加下拉菜单到搜索标签页
 
         self.search_title_label = tk.Label(search_tab, text="Title:")  # 创建标签“标题”
-        self.search_title_label.grid(row=1, column=0)  # 添加标签到搜索标签页
+        self.search_title_label.grid(row=1, column=0, sticky="w")  # 添加标签到搜索标签页
         self.search_title_entry = tk.Entry(search_tab)  # 创建输入框输入标题
-        self.search_title_entry.grid(row=1, column=1)  # 添加输入框到搜索标签页
+        self.search_title_entry.grid(row=1, column=1, sticky="w")  # 添加输入框到搜索标签页
 
         self.search_director_label = tk.Label(search_tab, text="Director:")  # 创建标签“导演”
-        self.search_director_label.grid(row=2, column=0)  # 添加标签到搜索标签页
+        self.search_director_label.grid(row=2, column=0, sticky="w")  # 添加标签到搜索标签页
         self.search_director_entry = tk.Entry(search_tab)  # 创建输入框输入导演姓名
-        self.search_director_entry.grid(row=2, column=1)  # 添加输入框到搜索标签页
+        self.search_director_entry.grid(row=2, column=1, sticky="w")  # 添加输入框到搜索标签页
 
         self.search_actor_label = tk.Label(search_tab, text="Actor:")  # 创建标签“演员”
-        self.search_actor_label.grid(row=3, column=0)  # 添加标签到搜索标签页
+        self.search_actor_label.grid(row=3, column=0, sticky="w")  # 添加标签到搜索标签页
         self.search_actor_entry = tk.Entry(search_tab)  # 创建输入框输入演员姓名
-        self.search_actor_entry.grid(row=3, column=1)  # 添加输入框到搜索标签页
+        self.search_actor_entry.grid(row=3, column=1, sticky="w")  # 添加输入框到搜索标签页
 
         self.search_genre_label = tk.Label(search_tab, text="Genre:")  # 创建标签“类型”
-        self.search_genre_label.grid(row=4, column=0)  # 添加标签到搜索标签页
+        self.search_genre_label.grid(row=4, column=0, sticky="w")  # 添加标签到搜索标签页
         self.search_genre_entry = tk.Entry(search_tab)  # 创建输入框输入影片类型
-        self.search_genre_entry.grid(row=4, column=1)  # 添加输入框到搜索标签页
+        self.search_genre_entry.grid(row=4, column=1, sticky="w")  # 添加输入框到搜索标签页
 
         self.search_button = tk.Button(search_tab, text="Search", command=self.search_media)  # 创建搜索按钮
-        self.search_button.grid(row=5, column=0, columnspan=2)  # 添加搜索按钮到搜索标签页
+        self.search_button.grid(row=5, column=0, columnspan=2, sticky="w")  # 添加搜索按钮到搜索标签页
 
+        # search_tab.grid_columnconfigure(0, weight=1)
         self.search_results_text = tk.Text(search_tab)  # 创建文本框显示搜索结果
-        self.search_results_text.grid(row=6, column=0, columnspan=2)  # 添加文本框到搜索标签页
+        self.search_results_text.grid(row=6, column=0, columnspan=2, sticky="nsew")
+        # search_tab.grid_rowconfigure(6, weight=1)
+        # self.search_results_text.grid(row=6, column=0, columnspan=2)  # 添加文本框到搜索标签页
 
     def create_recommendation_tab(self):
         recommendation_tab = ttk.Frame(self.notebook)  # 创建一个框架用于推荐标签页
@@ -106,24 +113,25 @@ class RecommenderGUI:
         self.recommendation_results_text = tk.Text(recommendation_tab)  # 创建文本框显示推荐结果
         self.recommendation_results_text.grid(row=3, column=0, columnspan=2)  # 添加文本框到推荐标签页
 
+
     def create_buttons(self):
-        button_frame = tk.Frame(self.root)  # 创建一个框架用于底部按钮
-        button_frame.pack()  # 添加框架到主窗口
+        button_frame = tk.Frame(self.root)  # Create a frame for the bottom buttons
+        button_frame.pack(side='bottom', fill='x', padx=10, pady=10)  # Ensure it is at the bottom and visible
 
-        load_shows_button = tk.Button(button_frame, text="Load Shows", command=self.load_shows)  # 创建加载节目按钮
-        load_shows_button.pack(side="left")  # 添加按钮到按钮框架
+        load_shows_button = tk.Button(button_frame, text="Load Shows", command=self.load_shows)
+        load_shows_button.pack(side="left", padx=5, pady=5)
 
-        load_books_button = tk.Button(button_frame, text="Load Books", command=self.load_books)  # 创建加载书籍按钮
-        load_books_button.pack(side="left")  # 添加按钮到按钮框架
+        load_books_button = tk.Button(button_frame, text="Load Books", command=self.load_books)
+        load_books_button.pack(side="left", padx=5, pady=5)
 
-        load_associations_button = tk.Button(button_frame, text="Load Associations", command=self.load_associations)  # 创建加载关联按钮
-        load_associations_button.pack(side="left")  # 添加按钮到按钮框架
+        load_associations_button = tk.Button(button_frame, text="Load Associations", command=self.load_associations)
+        load_associations_button.pack(side="left", padx=5, pady=5)
 
-        credit_info_button = tk.Button(button_frame, text="Credit Info", command=self.credit_info_box)  # 创建信用信息按钮
-        credit_info_button.pack(side="left")  # 添加按钮到按钮框架
+        credit_info_button = tk.Button(button_frame, text="Credit Info", command=self.credit_info_box)
+        credit_info_button.pack(side="left", padx=5, pady=5)
 
-        quit_button = tk.Button(button_frame, text="Quit", command=self.root.destroy)  # 创建退出按钮
-        quit_button.pack(side="left")  # 添加按钮到按钮框架
+        quit_button = tk.Button(button_frame, text="Quit", command=self.root.destroy)
+        quit_button.pack(side="left", padx=5, pady=5)
 
     def load_shows(self):
         self.recommender.loadShows()  # 调用推荐器加载节目数据
@@ -143,7 +151,6 @@ class RecommenderGUI:
     def load_books(self):
         self.recommender.loadBooks()  # 调用推荐器加载书籍数据
         book_list, book_stats = self.recommender.getBookList(), self.recommender.getBookStats()  # 获取书籍列表和统计数据
-
         self.book_text.delete(1.0, tk.END)  # 清空书籍文本框
         self.book_text.insert(tk.END, book_list)  # 插入书籍列表到文本框
         self.book_stats_text.delete(1.0, tk.END)  # 清空书籍统计文本框

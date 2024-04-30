@@ -1,7 +1,8 @@
+# Show.py
 from Media import Media
 
 class Show(Media):
-    def __init__(self, media_id, title, average_rating, show_type, directors, actors, country_code, date_added, release_year, rating, duration, genres, description):
+    def __init__(self, media_id, show_type, title, directors, actors, average_rating, country_code, date_added, release_year, rating, duration, genres, description):
         super().__init__(media_id, title, average_rating)
         self._show_type = show_type
         self._directors = directors
@@ -13,6 +14,8 @@ class Show(Media):
         self._duration = duration
         self._genres = genres
         self._description = description
+
+    # Accessors
     def get_show_type(self):
         return self._show_type
 
@@ -43,7 +46,7 @@ class Show(Media):
     def get_description(self):
         return self._description
 
-    # Mutator methods
+    # Mutators
     def set_show_type(self, show_type):
         self._show_type = show_type
 
