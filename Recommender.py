@@ -298,11 +298,11 @@ class Recommender:
             result_lines.append(f"{title_formatted}{authors_formatted}{publisher_formatted}")
         return '\n'.join(result_lines)
 
-    def getRecommendations(self, media_type, title):
-        if media_type in ['Movie', 'TV Show']:
+   def getRecommendations(self, media_type, title):
+        if media_type in ['Movie', 'TV Show', 'Books']:
             found_id = None
             for show_id, show in self.shows.items():
-                if show.title == title and show.show_type == media_type:
+                if show._title == title and show._show_type == media_type:  # Attributes has been changed - Initialzed attributes were ._title but given title
                     found_id = show_id
                     break
 
@@ -317,7 +317,8 @@ class Recommender:
             for book_id in associated_books:
                 book = self.books.get(book_id)
                 if book:
-                    results.append(f"Book Title: {book.title}, Author: {book.authors}, Publisher: {book.publisher}")
+                    # Attributes has been changed - Initialzed attributes were ._title, _authors, and _publisher but given title, authors, publisher
+                    results.append(f"Book Title: {book._title}, Author: {book._authors}, Publisher: {book._publisher}")
             return "\n".join(results) if results else "No results"
 
         elif media_type == 'Book':
@@ -338,15 +339,9 @@ class Recommender:
             for show_id in associated_shows:
                 show = self.shows.get(show_id)
                 if show:
-                    results.append(f"Show Title: {show.title}, Type: {show.show_type}, Directors: {show.directors}")
+                    results.append(f"Show Title: {show._title}, Type: {show._show_type}, Directors: {show._directors}")
             return "\n".join(results) if results else "No results"
 
         else:
             messagebox.showwarning("Warning", "Invalid media type specified. Choose 'Movie', 'TV Show', or 'Book'.")
             return "Invalid media type"
-
-
-
-
-
-
