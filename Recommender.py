@@ -1,56 +1,47 @@
-import tkinter as tk
+import csv
 from tkinter import filedialog, messagebox
-from typing import Self
+from collections import Counter
 from Book import Book
 from Show import Show
-import csv
-
 
 class Recommender:
     def __init__(self):
         self.books = {}
         self.shows = {}
         self.associations = {}
-    
+
     def loadBooks(self):
         while True:
             file_path = filedialog.askopenfilename(title="Select a book file",
-                                                filetypes=[("Tab-delimited files", "*.csv")])
+                                                   filetypes=[("Tab-delimited files", "*.csv")])
             if not file_path:
                 return  # User cancelled the dialog
             try:
                 with open(file_path, "r", newline='', encoding='utf-8') as file:
                     reader = csv.DictReader(file)
-                    self.books = {}  # Assuming self.books is a dictionary
+                    self.books = {}  # Resetting the dictionary
                     for row in reader:
-                        try:
-                            book = Book(
-                                row['bookID'], 
-                                row['title'], 
-                                row['authors'], 
-                                row['average_rating'], 
-                                row['isbn'],
-                                row['isbn13'],
-                                row['language_code'], 
-                                int(row['num_pages']), 
-                                int(row['ratings_count']), 
-                                row['publication_date'],
-                                row['publisher']
-                            )
-                            self.books[row['bookID']] = book  # Assuming 'bookID' is the key to store in the dictionary
-                        except ValueError as e:
-                            print(f"Error converting book data: {e}")
-                        except KeyError as e:
-                            print(f"Missing expected column in data: {e}")
+                        book = Book(
+                            row['bookID'],
+                            row['title'],
+                            row['authors'],
+                            row['average_rating'],
+                            row['isbn'],
+                            row['isbn13'],
+                            row['language_code'],
+                            int(row['num_pages']),
+                            int(row['ratings_count']),
+                            row['publication_date'],
+                            row['publisher']
+                        )
+                        self.books[row['bookID']] = book
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to read file: {e}")
-                continue  # Allow the user to try again or cancel
-            break  # Successfully loaded the data
-
+                continue
+            break
 
     def loadShows(self):
         while True:
-
             file_path = filedialog.askopenfilename(title="Select a show file",
                                                    filetypes=[("Tab-delimited files", "*.csv")])
             if not file_path:
@@ -58,19 +49,24 @@ class Recommender:
             try:
                 with open(file_path, "r", newline='', encoding='utf-8') as file:
                     reader = csv.DictReader(file)
-                    print("CSV Headers:", reader.fieldnames)
+                    self.shows = {}  # Resetting the dictionary
                     for row in reader:
-                        try:
-                            show = Show(row['show_id'], row['type'], row['title'], row['director'], row['cast'],
-                                        row['average_rating'],
-                                        row['country'], row['date_added'], row['release_year'], row['rating'],
-                                        row['duration'],
-                                        row['listed_in'], row['description'])
-                            self.shows[row['show_id']] = show
-                        except ValueError as e:
-                            print(f"Error converting book data: {e}")
-                        except KeyError as e:
-                            print(f"Missing expected column in data: {e}")
+                        show = Show(
+                            row['show_id'],
+                            row['type'],
+                            row['title'],
+                            row['director'],
+                            row['cast'],
+                            row['average_rating'],
+                            row['country'],
+                            row['date_added'],
+                            row['release_year'],
+                            row['rating'],
+                            row['duration'],
+                            row['listed_in'],
+                            row['description']
+                        )
+                        self.shows[row['show_id']] = show
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to read file: {e}")
                 continue
@@ -82,22 +78,24 @@ class Recommender:
                                                    filetypes=[("Tab-delimited files", "*.csv")])
             if not file_path:
                 return
-            with open(file_path, "r", newline='', encoding='utf-8') as file:
-                reader = csv.reader(file)
-                for row in reader:
-                    id1, id2 = row
-                    if id1 not in self.associations:
-                        self.associations[id1] = {}
-                    if id2 not in self.associations[id1]:
-                        self.associations[id1][id2] = 0
-                    self.associations[id1][id2] += 1
+            try:
+                with open(file_path, "r", newline='', encoding='utf-8') as file:
+                    reader = csv.reader(file)
+                    for row in reader:
+                        id1, id2 = row
+                        if id1 not in self.associations:
+                            self.associations[id1] = {}
+                        self.associations[id1][id2] = self.associations[id1].get(id2, 0) + 1
 
-                    if id2 not in self.associations:
-                        self.associations[id2] = {}
-                    if id1 not in self.associations[id2]:
-                        self.associations[id2][id1] = 0
-                    self.associations[id2][id1] += 1
+                        if id2 not in self.associations:
+                            self.associations[id2] = {}
+                        self.associations[id2][id1] = self.associations[id2].get(id1, 0) + 1
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to read file: {e}")
+                continue
             break
+
+    # Additional methods for statistics, searching, etc., would be here.
 
     def getMovieList(self):
         if not any(show for show in self.shows.values() if show._show_type == 'Movie'): return "No movies found."
@@ -124,6 +122,14 @@ class Recommender:
             authors = book._authors.ljust(max_authors_length + 2)
             book_list.append(f"{title}{authors}")
         return '\n'.join(book_list)
+
+    def get_movie_ratings(self):
+        """ Return a count of each rating type for movies. """
+        return Counter(show._rating for show in self.shows.values() if show._show_type == 'Movie')
+
+    def get_tv_show_ratings(self):
+        """ Return a count of each rating type for TV shows. """
+        return Counter(show._rating for show in self.shows.values() if show._show_type == 'TV Show')
 
     def getTVList(self):
         if not any(show for show in self.shows.values() if show._show_type == 'TV Show'):
@@ -298,50 +304,51 @@ class Recommender:
             result_lines.append(f"{title_formatted}{authors_formatted}{publisher_formatted}")
         return '\n'.join(result_lines)
 
-   def getRecommendations(self, media_type, title):
-        if media_type in ['Movie', 'TV Show', 'Books']:
-            found_id = None
-            for show_id, show in self.shows.items():
-                if show._title == title and show._show_type == media_type:  # Attributes has been changed - Initialzed attributes were ._title but given title
-                    found_id = show_id
-                    break
 
-            if not found_id:
-                messagebox.showwarning("Warning", "No recommendations found for the given title.")
-                return "No results"
-            associated_books = self.associations.get(found_id, {})
-            if not associated_books:
-                return "No recommendations available."
+def getRecommendations(self, media_type, title):
+    if media_type in ['Movie', 'TV Show', 'Books']:
+        found_id = None
+        for show_id, show in self.shows.items():
+            if show._title == title and show._show_type == media_type:  # Attributes has been changed - Initialzed attributes were ._title but given title
+                found_id = show_id
+                break
 
-            results = []
-            for book_id in associated_books:
-                book = self.books.get(book_id)
-                if book:
-                    # Attributes has been changed - Initialzed attributes were ._title, _authors, and _publisher but given title, authors, publisher
-                    results.append(f"Book Title: {book._title}, Author: {book._authors}, Publisher: {book._publisher}")
-            return "\n".join(results) if results else "No results"
+        if not found_id:
+            messagebox.showwarning("Warning", "No recommendations found for the given title.")
+            return "No results"
+        associated_books = self.associations.get(found_id, {})
+        if not associated_books:
+            return "No recommendations available."
 
-        elif media_type == 'Book':
-            found_id = None
-            for book_id, book in self.books.items():
-                if book.title == title:
-                    found_id = book_id
-                    break
+        results = []
+        for book_id in associated_books:
+            book = self.books.get(book_id)
+            if book:
+                # Attributes has been changed - Initialzed attributes were ._title, _authors, and _publisher but given title, authors, publisher
+                results.append(f"Book Title: {book._title}, Author: {book._authors}, Publisher: {book._publisher}")
+        return "\n".join(results) if results else "No results"
 
-            if not found_id:
-                messagebox.showwarning("Warning", "No recommendations found for the given title.")
-                return "No results"
-            associated_shows = self.associations.get(found_id, {})
-            if not associated_shows:
-                return "No recommendations available."
+    elif media_type == 'Book':
+        found_id = None
+        for book_id, book in self.books.items():
+            if book.title == title:
+                found_id = book_id
+                break
 
-            results = []
-            for show_id in associated_shows:
-                show = self.shows.get(show_id)
-                if show:
-                    results.append(f"Show Title: {show._title}, Type: {show._show_type}, Directors: {show._directors}")
-            return "\n".join(results) if results else "No results"
+        if not found_id:
+            messagebox.showwarning("Warning", "No recommendations found for the given title.")
+            return "No results"
+        associated_shows = self.associations.get(found_id, {})
+        if not associated_shows:
+            return "No recommendations available."
 
-        else:
-            messagebox.showwarning("Warning", "Invalid media type specified. Choose 'Movie', 'TV Show', or 'Book'.")
-            return "Invalid media type"
+        results = []
+        for show_id in associated_shows:
+            show = self.shows.get(show_id)
+            if show:
+                results.append(f"Show Title: {show._title}, Type: {show._show_type}, Directors: {show._directors}")
+        return "\n".join(results) if results else "No results"
+
+    else:
+        messagebox.showwarning("Warning", "Invalid media type specified. Choose 'Movie', 'TV Show', or 'Book'.")
+        return "Invalid media type"
