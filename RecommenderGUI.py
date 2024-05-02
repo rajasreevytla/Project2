@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 from Recommender import Recommender
 
 class RecommenderGUI:
@@ -10,7 +12,7 @@ class RecommenderGUI:
         # set the window information
         self.recommender = Recommender()
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(expand=True, fill="both")
+        self.notebook.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         # create notebook as container
         self.create_movie_tab()
         self.create_tv_show_tab()
@@ -18,10 +20,13 @@ class RecommenderGUI:
         self.create_tv_movie_search_tab()
         self.create_book_search_tab()
         self.create_recommendation_tab()
+        self.create_ratings_tab()
         # creating tabs
-
         self.create_buttons()
         # creating buttons
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_rowconfigure(1, weight=0)  # Ensure the button frame doesn't expand vertically
+        self.root.grid_columnconfigure(0, weight=1)
 
     def create_movie_tab(self):
         movie_tab = ttk.Frame(self.notebook)
@@ -112,16 +117,49 @@ class RecommenderGUI:
 
         self.recommendation_results_text.insert(tk.END, "Please enter a title to receive a recommendation.")
         # set default text
+
+    def create_ratings_tab(self):
+        ratings_tab = ttk.Frame(self.notebook)
+        self.notebook.add(ratings_tab, text="Ratings")
+
+        # Fetch the data for movie ratings and TV show ratings
+        movie_ratings_data = self.recommender.get_movie_ratings()
+        tv_show_ratings_data = self.recommender.get_tv_show_ratings()
+
+        # Create the pie chart for Movie Ratings
+        movie_fig, movie_ax = plt.subplots()
+        movie_ax.pie(movie_ratings_data.values(), labels=movie_ratings_data.keys(), autopct='%1.2f%%', startangle=90)
+        movie_ax.set_title('Movie Ratings Distribution')
+
+        # Create the pie chart for TV Show Ratings
+        tv_show_fig, tv_show_ax = plt.subplots()
+        tv_show_ax.pie(tv_show_ratings_data.values(), labels=tv_show_ratings_data.keys(), autopct='%1.2f%%',
+                       startangle=90)
+        tv_show_ax.set_title('TV Show Ratings Distribution')
+
+        # Create canvas widgets to embed the figures in the tkinter frame
+        movie_canvas = FigureCanvasTkAgg(movie_fig, master=ratings_tab)  # Embed the figure in the tkinter window
+        movie_canvas.draw()
+        movie_canvas_widget = movie_canvas.get_tk_widget()
+        movie_canvas_widget.grid(row=0, column=0, padx=10, pady=10)
+
+        tv_show_canvas = FigureCanvasTkAgg(tv_show_fig, master=ratings_tab)
+        tv_show_canvas.draw()
+        tv_show_canvas_widget = tv_show_canvas.get_tk_widget()
+        tv_show_canvas_widget.grid(row=0, column=1, padx=10, pady=10)
+
     def create_buttons(self):
         button_frame = tk.Frame(self.root)
-        button_frame.pack(fill="x", pady=1)
+        button_frame.grid(row=1, column=0, sticky="ew")  # Ensure it expands only horizontally
+        button_frame.config(bg='red')
 
-        tk.Button(button_frame, text="Load Shows", command=self.loadShows).pack(side="left", expand=True, fill="x")
-        tk.Button(button_frame, text="Load Books", command=self.loadBooks).pack(side="left", expand=True, fill="x")
-        tk.Button(button_frame, text="Load Associations", command=self.loadAssociations).pack(side="left", expand=True, fill="x")
-        tk.Button(button_frame, text="Credit Info", command=self.credit_info_box).pack(side="left", expand=True, fill="x")
-        tk.Button(button_frame, text="Quit", command=self.root.destroy).pack(side="left", expand=True, fill="x")
-        # add buttons to the bottom，and evenly distributed
+        # Configure the buttons with uniform expansion
+        buttons = ["Load Shows", "Load Books", "Load Associations", "Credit Info", "Quit"]
+        commands = [self.loadShows, self.loadBooks, self.loadAssociations, self.credit_info_box, self.root.destroy]
+        for i, (text, cmd) in enumerate(zip(buttons, commands)):
+            btn = tk.Button(button_frame, text=text, command=cmd)
+            btn.grid(row=0, column=i, sticky="ew")
+            button_frame.grid_columnconfigure(i, weight=1)
 
     def loadShows(self):
         self.recommender.loadShows()
@@ -200,6 +238,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
 
