@@ -118,7 +118,6 @@ class RecommenderGUI:
         # Add buttons to the button frame with evenly distributed packing
         tk.Button(button_frame, text="Load Shows", command=self.loadShows).pack(side="left", expand=True, fill="x")
         tk.Button(button_frame, text="Load Books", command=self.loadBooks).pack(side="left", expand=True, fill="x")
-        tk.Button(button_frame, text="Search Books", command=self.search_books).pack(side="left", expand=True, fill="x")
         tk.Button(button_frame, text="Load Associations", command=self.loadAssociations).pack(side="left", expand=True, fill="x")
         tk.Button(button_frame, text="Credit Info", command=self.credit_info_box).pack(side="left", expand=True, fill="x")
         tk.Button(button_frame, text="Quit", command=self.root.destroy).pack(side="left", expand=True, fill="x")
