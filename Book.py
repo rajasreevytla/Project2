@@ -1,9 +1,11 @@
 from Media import Media
 
 class Book(Media):
-    def __init__(self, media_id, title, authors, average_rating, isbn, isbn13, language_code, num_pages, ratings_count, pub_date, publisher):
+    def __init__(self, media_id, title, authors,  average_rating, isbn, isbn13, language_code, num_pages, ratings_count, pub_date, publisher):
         super().__init__(media_id, title, average_rating)
         #call the function and initialize
+        self._title = title # Added title
+        self._media_id = media_id
         self._isbn = isbn
         self._isbn13 = isbn13
         self._authors = authors
@@ -12,6 +14,12 @@ class Book(Media):
         self._publisher = publisher
         self._pub_date = pub_date
         self._ratings_count = ratings_count
+
+    def get_title(self): # Added get_title method
+        return self._title
+
+    def items(self):
+        return self._media_id
 
     def get_authors(self):
         return self._authors
@@ -60,4 +68,3 @@ class Book(Media):
 
     def set_publisher(self, publisher):
         self._publisher = publisher
-
