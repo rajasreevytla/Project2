@@ -62,7 +62,7 @@ class RecommenderGUI:
 
     def create_tv_movie_search_tab(self):
         search_tab = ttk.Frame(self.notebook)
-        self.notebook.add(search_tab, text="SearchTV Shows Movies")
+        self.notebook.add(search_tab, text="SearchMovies/TV")
         ttk.Label(search_tab, text="Type:").grid(row=0, column=0, padx=10, pady=5)
         self.search_type_combobox = ttk.Combobox(search_tab, values=["Movie", "TV Show"])
         self.search_type_combobox.grid(row=0, column=1, padx=10, pady=5)
